@@ -2,33 +2,42 @@
 
 #include <iostream>
 #include <arpa/inet.h>
-#include "controller.hpp"
 #include <mutex>
+#include <vector>
+
+#include "network.hpp"
+#include "common.hpp"
+#include "controller.hpp"
 
 class Server {
 public:
-  Server() {};
-  virtual ~Server() {};
+  Server(){};
+  virtual ~Server(){};
   virtual void Run()=0;
   virtual void Init()=0;
 };
 
+
+
 class TcpServer: public Server {
 private:
-  int socketfd;
-  char* _ip;
-  int _port;
-  Controller* app;
+  Network* _net;
+  Controller* _app;
+
+  std::vector<std::thread> handlers;
   
   int current_players;
   std::mutex* current_players_mux;
 
-  void HandleConnection(int fd);
-  //std::thread SpawnHandler(int fd);
+  void HandleConnection(Session* s);
+  void HandleGuess(Session* s, std::string player, std::string guess);
+  void HandleGetScore(Session* s, std::string player);
   
-
 public:
-  TcpServer(char* ip, int port, int players, Controller* app);
+  TcpServer(Controller* app, Network* net, int players);
+  ~TcpServer(){
+    delete current_players_mux;
+  };
   void Run();
   void Init(); 
 };

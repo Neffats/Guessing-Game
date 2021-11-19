@@ -1,20 +1,28 @@
+#pragma once
+
+#include <mutex>
+#include <map>
+
+#include "common.hpp"
+
+using namespace std;
+
 // Singleton class.
 class ScoreBoard {
 private:
-  static ScoreBoard* instance;
+  //static ScoreBoard instance;
 
-  ScoreBoard() = default;
+  std::map<std::string, Score> _scores;
 
-  ScoreBoard(const ScoreBoard&) = delete;
-  ScoreBoard& operator=(const ScoreBoard&) = delete;
-  ScoreBoard(ScoreBoard&&) = delete;
-  ScoreBoard& operator=(ScoreBoard&&) = delete;
+  std::mutex mux;
+
+  ScoreBoard() {};
 
 public:
-   
-  static ScoreBoard& GeInstance() {
-    static ScoreBoard* sb = new ScoreBoard();
-    return *sb;
-  }
- 
+  static ScoreBoard& GetInstance();
+  ScoreBoard(ScoreBoard &other) = delete;
+
+  void RecordCorrect(std::string player);
+  void RecordIncorrect(std::string player);
+  Score GetScore(std::string player);
 };
