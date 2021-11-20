@@ -6,10 +6,10 @@
 
 #include "common.hpp"
 
-class Session {
+class ISession {
 public:
-  Session() {};
-  virtual ~Session() {};
+  ISession() {};
+  virtual ~ISession() {};
   virtual Message Read()=0;
   virtual void Ok()=0;
   virtual void Error()=0;
@@ -18,16 +18,16 @@ public:
   virtual void Score(struct Score s)=0;
 };
 
-class Network {
+class INetwork {
 public:
-  Network() {};
-  virtual ~Network(){};
+  INetwork() {};
+  virtual ~INetwork(){};
   virtual void Init()=0;
-  virtual Session* Accept()=0;
+  virtual ISession* Accept()=0;
 };
 
 
-class TcpNetwork: public Network {
+class TcpNetwork: public INetwork {
 private:
   int _port;
   int _sockfd;
@@ -36,10 +36,10 @@ public:
   TcpNetwork(int port);
   ~TcpNetwork();
   void Init();
-  Session* Accept();
+  ISession* Accept();
 };
 
-class TcpSession: public Session {
+class TcpSession: public ISession {
 private:
   int _fd;
   struct sockaddr_in _client_addr;

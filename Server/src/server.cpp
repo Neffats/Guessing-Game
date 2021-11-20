@@ -11,7 +11,7 @@
 
 #include "server.hpp"
 
-TcpServer::TcpServer(Controller* app, Network* net, int players) {
+TcpServer::TcpServer(IController* app, Network* net, int players) {
   current_players = players;
   _app = app;
   _net = net;
@@ -26,7 +26,7 @@ void TcpServer::Init() {
 
 void TcpServer::Run() {
   while(1) {
-    Session* s = _net->Accept();
+    ISession* s = _net->Accept();
 
     std::cout << "Connection received!" << std::endl;
 
@@ -56,7 +56,7 @@ void TcpServer::Run() {
 
 #define BUFFER_SIZE 512
 
-void TcpServer::HandleConnection(Session* s) {
+void TcpServer::HandleConnection(ISession* s) {
   Message msg = s->Read();
 
   if (msg.type != MessageType::Connect) {
@@ -104,7 +104,7 @@ void TcpServer::HandleConnection(Session* s) {
   }
 };
 
-void TcpServer::HandleGuess(Session* s, std::string player, std::string guess) {
+void TcpServer::HandleGuess(ISession* s, std::string player, std::string guess) {
   int guess_int = std::stoi(guess);
 
   Result r = _app->CheckGuess(guess_int, player);
@@ -114,7 +114,7 @@ void TcpServer::HandleGuess(Session* s, std::string player, std::string guess) {
   return;
 };
 
-void TcpServer::HandleGetScore(Session* s, std::string player) {
+void TcpServer::HandleGetScore(ISession* s, std::string player) {
   Score score = _app->GetScore(player);
 
   s->Score(score);
