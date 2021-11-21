@@ -25,6 +25,7 @@ void TcpServer::Run() {
 
     _current_players_mux.lock();
     if (_current_players == 0) {
+      // Cleanup
       _current_players_mux.unlock();
       s->Error();
       delete s;
@@ -52,6 +53,7 @@ void TcpServer::HandleConnection(ISession* s) {
   try {
     msg = s->Read();
   } catch (std::exception& e) {
+    // Cleanup
     s->Error();
     _current_players_mux.lock();
     _current_players += 1;
@@ -60,7 +62,9 @@ void TcpServer::HandleConnection(ISession* s) {
     return;
   }
 
+  // All connections must start with the CONNECT command.
   if (msg.type != MessageType::Connect) {
+    // Cleanup
     s->Error();
     delete s;
 
@@ -75,8 +79,10 @@ void TcpServer::HandleConnection(ISession* s) {
 
   s->Ok();
 
+  // Should probably create a logger to handle this stuff.
   std::cout << "Connected: " << player << std::endl;
 
+  // Main loop
   while (true) {
     try {
       msg = s->Read();

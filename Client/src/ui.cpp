@@ -8,6 +8,7 @@ CommandLine::CommandLine(std::string p, IController* c) {
     _player = p;
 }
 
+// Runs the main program loop.
 void CommandLine::Run() {
     while (true) {
         std::cout << "Please enter a number (type d to disconnect): ";
@@ -18,13 +19,6 @@ void CommandLine::Run() {
             _app->Disconnect();
             return;
         }
-
-        // try {
-        //     int guess = std::stoi(input);
-        // } catch (std::exception& e) {
-        //     std::cout << "Error: " << e.what() << std::endl;
-        //     continue;
-        // }
 
         Command guess = { CommandType::Guess, input};
 
@@ -38,38 +32,6 @@ void CommandLine::Run() {
         Score s = _app->GetScore(_player);
         std::cout << "Your current score is: " << s.correct << "/" << s.attempts << std::endl;
     }
-
-    /*
-    while (true) {
-        PrintPrompt();
-
-        std::string input;
-        getline(std::cin, input);
-
-        Command cmd;
-        try {
-            cmd = ParseCommand(input);
-        } catch (std::exception& e) {
-            PrintError(std::string("Error: ") + std::string(e.what()));
-            return;
-        }
-
-        switch (cmd.type) {
-        case CommandType::Guess:
-            HandleGuess(cmd);
-            break;
-        case CommandType::Get_Score:
-            HandleGetScore(cmd);
-            break;
-        case CommandType::Disconnect:
-            _app->Disconnect();
-            return;
-        default:
-            PrintError("Invalid command: " + cmd.parameter);
-            return;
-        }
-    } 
-    */
 };
 
 void CommandLine::HandleGuess(Command cmd) {

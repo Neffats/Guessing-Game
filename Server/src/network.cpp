@@ -19,6 +19,8 @@ TcpNetwork::~TcpNetwork() {
   close(_sockfd);
 };  
 
+// Creates and configures the socket.
+// Throws runtime_error.
 void TcpNetwork::Init() {
   struct sockaddr_in serv_addr;
   
@@ -47,6 +49,8 @@ void TcpNetwork::Init() {
   }
 };
 
+// Waits for a client to connect and creates a session for that client.
+// All communication to that client is then done via the session object.
 ISession* TcpNetwork::Accept() {
   int new_fd;
   struct sockaddr_in client_addr;
@@ -76,6 +80,7 @@ TcpSession::~TcpSession() {
 
 #define BUFFER_SIZE 512
 
+// Read from the socket for the next message.
 Message TcpSession::Read() {
   char buffer[BUFFER_SIZE];
   

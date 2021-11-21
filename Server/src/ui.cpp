@@ -33,6 +33,7 @@ Result CommandLine::CheckGuess(int guess, std::string player) {
 
     GuessResult* r = _result_queue.front();
     if (r->player == player) {
+      // Cleanup
       _result_queue.pop();
       _result_mux.unlock();
 
@@ -48,6 +49,7 @@ Result CommandLine::CheckGuess(int guess, std::string player) {
   }
 };
 
+// Creates the main UI thread.
 void CommandLine::Run() {
   std::thread t([this] () {
     StartThread();
@@ -57,19 +59,21 @@ void CommandLine::Run() {
   _main_thread = std::move(t);
 };
 
+// This is the main UI thread that handles the user input.
 void CommandLine::StartThread() {
   PrintWelcome();
 
   std::cout << "Waiting for incoming guesses..." << std::endl;
 
   while (true) {
+    // Check if there are any guesses to handle in the queue.
     _guess_mux.lock();
     bool empty = _guess_queue.empty();
     _guess_mux.unlock();
+
     if (!empty) {
       Guess* g = FetchGuess();
 
-    
       std::cout << "Received guess " << g->guess << " from player " << g->player << std::endl;
 
       Result res;
@@ -78,7 +82,6 @@ void CommandLine::StartThread() {
 
       while (true) {
         std::cout << "Is this (C)orrect/(H)igher/(L)ower: ";
-
 
         std::cin >> resp;
 

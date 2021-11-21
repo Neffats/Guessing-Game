@@ -15,8 +15,8 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
-.vscode/
-*/.cmake/
+.*
+!/.gitignore
 
 ### CMake Patch ###
 # External projects
