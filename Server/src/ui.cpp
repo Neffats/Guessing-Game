@@ -12,15 +12,18 @@ CommandLine::CommandLine() {
   //_result_mux = new std::mutex;
 };
 
+// This function is should only ever called from a network session thread.
+// It puts the guess into the guess queue and waits for the main UI thread to
+// process the guess.
 Result CommandLine::CheckGuess(int guess, std::string player) {
+  // Allocated here, this will be freed by the UI thread in StartThread().
   Guess* g = new Guess(guess, player);
   
   _guess_mux.lock();
   _guess_queue.emplace(g);
   _guess_mux.unlock();
 
-  std::cout << "Emplaced guess into ui queue" << std::endl;
-
+  
   while (true) {
     _result_mux.lock();
     if (_result_queue.empty()) {
@@ -66,7 +69,7 @@ void CommandLine::StartThread() {
     if (!empty) {
       Guess* g = FetchGuess();
 
-      std::cout << "Received guess " << g->guess << "from player " << g->player << std::endl;
+      std::cout << "Received guess " << g->guess << " from player " << g->player << std::endl;
       std::cout << "Is this (C)orrect/(H)igher/(L)ower: ";
 
       std::string resp;
@@ -86,6 +89,7 @@ void CommandLine::StartThread() {
         // Handle stuff
       }
 
+      // Allocated new GuessResult here, this will be freed by other thread in CheckGuess().
       GuessResult* r = new GuessResult(res, plr);
       PutResult(r);
       delete g;

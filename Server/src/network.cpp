@@ -27,6 +27,10 @@ void TcpNetwork::Init() {
     throw std::runtime_error("Failed to create socket");
   }
 
+  int enable = 1;
+  if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+      throw std::runtime_error("setsockopt(SO_REUSEADDR) failed");
+
   memset(&serv_addr, '0', sizeof(serv_addr));
 
   serv_addr.sin_family = AF_INET;
@@ -43,7 +47,7 @@ void TcpNetwork::Init() {
   }
 };
 
-Session* TcpNetwork::Accept() {
+ISession* TcpNetwork::Accept() {
   int new_fd;
   struct sockaddr_in client_addr;
   socklen_t client_len;
@@ -51,8 +55,6 @@ Session* TcpNetwork::Accept() {
   client_len = sizeof(client_addr);
   
   new_fd = accept(_sockfd, (struct sockaddr *)&client_addr, &client_len);
-  
-  std::cout << "Connection received!" << std::endl;
   
   if (new_fd == -1) {
     throw std::runtime_error("Failed to accept new connection");
@@ -98,7 +100,16 @@ Message TcpSession::Read() {
 
 Message TcpSession::ParseMessage(std::string msg) {
   MessageType type = GetMessageType(msg);
-  std::string param = GetMessageParameter(msg);
+
+  std::string param;
+
+  switch (type) {
+  case MessageType::Disconnect:
+      param = "";
+      break;
+  default:
+      param = GetMessageParameter(msg);
+  }
 
   Message m = { type, param };
   
@@ -129,7 +140,7 @@ std::string TcpSession::GetMessageParameter(std::string msg) {
 
   int delim_idx = msg.find_first_of(delim);
   
-  std::string parameter = msg.substr(delim_idx);
+  std::string parameter = msg.substr(delim_idx+1);
 
   return parameter;
 };

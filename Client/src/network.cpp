@@ -1,5 +1,6 @@
 #include "network.hpp"
 #include <exception>
+#include <iostream>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,6 +88,9 @@ void TcpNetwork::Disconnect(std::string player) {
         throw std::runtime_error("Failed to disconnect: " + std::string(e.what()));
     }
 
+    Message resp = Read();
+
+
     close(_sockfd);
 }
 
@@ -131,7 +135,7 @@ Score TcpNetwork::GetScore(std::string player) {
     }
 
     switch (resp.type) {
-    case MessageType::Answer:
+    case MessageType::Score:
         break;
     case MessageType::Error:
         throw std::runtime_error("Received error from server after GET_SCORE");
@@ -142,8 +146,8 @@ Score TcpNetwork::GetScore(std::string player) {
     std::string delim = "/";
     int delim_idx = resp.parameter.find_first_of(delim);
 
-    std::string correct = msg.substr(0, delim_idx);
-    std::string attempts = msg.substr(delim_idx);
+    std::string correct = resp.parameter.substr(0, delim_idx);
+    std::string attempts = resp.parameter.substr(delim_idx+1);
 
     int correct_int = std::stoi(correct);
     int attempts_int = std::stoi(attempts);
@@ -154,9 +158,10 @@ Score TcpNetwork::GetScore(std::string player) {
 }
 
 void TcpNetwork::SendMessage(std::string msg) {
-  if ( send(_sockfd, msg.data(), msg.length(), 0) == -1 ) {
-    throw std::runtime_error("Failed to send message");
-  }
+    std::string msg_send = msg + "\r\n";
+    if ( send(_sockfd, msg_send.data(), msg_send.length(), 0) == -1 ) {
+        throw std::runtime_error("Failed to send message");
+    }
 };
 
 #define BUFFER_SIZE 512
@@ -225,7 +230,9 @@ MessageType TcpNetwork::GetMessageType(std::string msg) {
       return MessageType::Busy;
   } else if (msg_type == "ANSWER") {
       return MessageType::Answer;
-  } else {
+  } else if (msg_type == "SCORE") {
+      return MessageType::Score;
+} else {
     return MessageType::Invalid;
   }
 };

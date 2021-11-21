@@ -9,35 +9,32 @@
 #include "common.hpp"
 #include "controller.hpp"
 
-class Server {
+class IServer {
 public:
-  Server(){};
-  virtual ~Server(){};
+  IServer(){};
+  virtual ~IServer(){};
   virtual void Run()=0;
   virtual void Init()=0;
 };
 
-
-
-class TcpServer: public Server {
+class TcpServer: public IServer {
 private:
-  Network* _net;
-  Controller* _app;
+  INetwork* _net;
+  IController* _app;
 
-  std::vector<std::thread> handlers;
+  std::vector<std::thread> _handlers;
   
-  int current_players;
-  std::mutex* current_players_mux;
+  // Keep track of how many available slots.
+  int _current_players;
+  std::mutex _current_players_mux;
 
-  void HandleConnection(Session* s);
-  void HandleGuess(Session* s, std::string player, std::string guess);
-  void HandleGetScore(Session* s, std::string player);
+  void HandleConnection(ISession* s);
+  void HandleGuess(ISession* s, std::string player, std::string guess);
+  void HandleGetScore(ISession* s, std::string player);
   
 public:
-  TcpServer(Controller* app, Network* net, int players);
-  ~TcpServer(){
-    delete current_players_mux;
-  };
+  TcpServer(IController* app, INetwork* net, int players);
+  ~TcpServer(){};
   void Run();
   void Init(); 
 };

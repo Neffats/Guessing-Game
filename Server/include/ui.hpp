@@ -7,10 +7,10 @@
 
 #include "common.hpp"
 
-class UI {
+class IUI {
 public:
-  UI(){};
-  virtual ~UI(){};
+  IUI(){};
+  virtual ~IUI(){};
   virtual Result CheckGuess(int guess, std::string player)=0;
 };
 
@@ -44,7 +44,7 @@ public:
   ~GuessResult(){};
 };
 
-class CommandLine: public UI {
+class CommandLine: public IUI {
 public:
   CommandLine();
   ~CommandLine(){

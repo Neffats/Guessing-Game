@@ -11,46 +11,36 @@
 
 #include "server.hpp"
 
-TcpServer::TcpServer(IController* app, Network* net, int players) {
-  current_players = players;
+TcpServer::TcpServer(IController* app, INetwork* net, int players) {
+  _current_players = players;
   _app = app;
   _net = net;
-  
-
-  current_players_mux = new std::mutex();
 };
 
-void TcpServer::Init() {
-  
-};
+void TcpServer::Init() {};
 
 void TcpServer::Run() {
   while(1) {
     ISession* s = _net->Accept();
 
-    std::cout << "Connection received!" << std::endl;
-
-    current_players_mux->lock();
-    if (current_players == 0) {
-      current_players_mux->unlock();
+    _current_players_mux.lock();
+    if (_current_players == 0) {
+      _current_players_mux.unlock();
       s->Error();
       delete s;
-      
-      std::cout << "Server Busy" << std::endl;
       
       continue;
     } 
 
-    current_players -= 1;
-    current_players_mux->unlock();
+    _current_players -= 1;
+    _current_players_mux.unlock();
 
     std::thread t1([this, s]() {
       HandleConnection(s);
     });
 
     t1.detach();
-    std::cout << "thread created" << std::endl;
-    handlers.push_back(std::move(t1));
+    _handlers.push_back(std::move(t1));
   }
 };
 
@@ -63,9 +53,9 @@ void TcpServer::HandleConnection(ISession* s) {
     s->Error();
     delete s;
 
-    current_players_mux->lock();
-    current_players += 1;
-    current_players_mux->unlock();
+    _current_players_mux.lock();
+    _current_players += 1;
+    _current_players_mux.unlock();
     
     return;
   }
@@ -92,9 +82,9 @@ void TcpServer::HandleConnection(ISession* s) {
       break;
     case MessageType::Disconnect:
       s->Ok();
-      current_players_mux->lock();
-      current_players += 1;
-      current_players_mux->unlock();
+      _current_players_mux.lock();
+      _current_players += 1;
+      _current_players_mux.unlock();
       delete s;
       return;
     case MessageType::Invalid:

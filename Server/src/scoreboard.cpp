@@ -6,12 +6,13 @@
 using namespace std;
 
 ScoreBoard& ScoreBoard::GetInstance() {
+    // Initialised on the first call to this function.
     static ScoreBoard sb;
     return sb;
 }
 
 void ScoreBoard::RecordCorrect(std::string player) {
-  const std::lock_guard<std::mutex> lock(mux);
+  const std::lock_guard<std::mutex> lock(_mux);
   
   if (_scores.count(player) == 0) {
     Score new_score = { 1, 1 };
@@ -23,7 +24,7 @@ void ScoreBoard::RecordCorrect(std::string player) {
 }
 
 void ScoreBoard::RecordIncorrect(std::string player) {
-  const std::lock_guard<std::mutex> lock(mux);
+  const std::lock_guard<std::mutex> lock(_mux);
 
   if (_scores.count(player) == 0) {
     Score new_score = { 0, 1 };
@@ -34,7 +35,7 @@ void ScoreBoard::RecordIncorrect(std::string player) {
 };
 
 Score ScoreBoard::GetScore(std::string player) {
-  const std::lock_guard<std::mutex> lock(mux);
+  const std::lock_guard<std::mutex> lock(_mux);
 
   if (_scores.count(player) == 0) {
     Score s = {0, 0};

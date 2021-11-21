@@ -15,6 +15,7 @@ enum class MessageType {
   Busy,
   Ok,
   Error,
+  Score,
   Invalid
 };
 

@@ -3,11 +3,43 @@
 
 #include "ui.hpp"
 
-CommandLine::CommandLine(IController* c) {
+CommandLine::CommandLine(std::string p, IController* c) {
     _app = c;
+    _player = p;
 }
 
 void CommandLine::Run() {
+    while (true) {
+        std::cout << "Please enter a number (type d to disconnect): ";
+        std::string input;
+        getline(std::cin, input);
+
+        if (input == "d") {
+            _app->Disconnect();
+            return;
+        }
+
+        // try {
+        //     int guess = std::stoi(input);
+        // } catch (std::exception& e) {
+        //     std::cout << "Error: " << e.what() << std::endl;
+        //     continue;
+        // }
+
+        Command guess = { CommandType::Guess, input};
+
+        try {
+            HandleGuess(guess);
+        } catch (std::exception& e) {
+            std::cout << "Error sending guess: " << e.what() << std::endl;
+            continue;
+        }
+
+        Score s = _app->GetScore(_player);
+        std::cout << "Your current score is: " << s.correct << "/" << s.attempts << std::endl;
+    }
+
+    /*
     while (true) {
         PrintPrompt();
 
@@ -31,12 +63,13 @@ void CommandLine::Run() {
             break;
         case CommandType::Disconnect:
             _app->Disconnect();
-            break;
+            return;
         default:
             PrintError("Invalid command: " + cmd.parameter);
             return;
-        } 
-    }
+        }
+    } 
+    */
 };
 
 void CommandLine::HandleGuess(Command cmd) {
@@ -45,8 +78,7 @@ void CommandLine::HandleGuess(Command cmd) {
     try {
         guess = std::stoi(cmd.parameter);
     } catch (std::exception& e) {
-        PrintError(e.what());
-        return;
+        throw;
     }
 
     Result r;
@@ -95,7 +127,15 @@ void CommandLine::PrintPrompt() {
 
 Command CommandLine::ParseCommand(std::string cmd) {
     CommandType type = ParseCommandType(cmd);
-    std::string param = GetCommandParameter(cmd);
+    std::string param;
+
+    switch (type) {
+    case CommandType::Disconnect:
+        param = "";
+        break;  
+    default:
+        param = GetCommandParameter(cmd);
+    }
 
     Command c = { type, param};
 
@@ -126,7 +166,7 @@ std::string CommandLine::GetCommandParameter(std::string cmd) {
   std::string delim = " ";
 
   int delim_idx = cmd.find_first_of(delim);
-    std::cout << "Find delim" << std::endl;
+
   std::string parameter = cmd.substr(delim_idx);
   
 

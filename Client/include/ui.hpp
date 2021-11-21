@@ -27,6 +27,7 @@ struct Command {
 class CommandLine : public IUI {
 private:
   IController* _app;
+  std::string _player;
 
   Command ParseCommand(std::string cmd);
   CommandType ParseCommandType(std::string cmd);
@@ -40,7 +41,7 @@ private:
   void PrintError(std::string err);
   void PrintPrompt();
 public:
-  CommandLine(IController* c);
+  CommandLine(std::string p, IController* c);
   
   void Run();
 
