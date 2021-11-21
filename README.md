@@ -6,18 +6,54 @@ decides whether the given guess was correct or not. If the guesser was
 incorrect, then the setter tells the guesser whether their guess was
 too high or too low.
 
+## Build
+
+To build run the build.sh script in the Server/Client directories.
+
+To manually build:
+
+```sh
+cd build/
+cmake ../
+cmake --build .
+```
+
+The only dependency for this application is CMake for building.
+
+This has only been tested on MacOS, but should build/run on Linux.
+
+## Usage
+
+### Server 
+
+To run the server simply run the executable:
+
+```sh
+./GuessingGameServer
+```
+
+### Client
+
+To run the client you must supply two parameters, your identifier/name and the IP address of the server:
+
+``` sh
+./GuessingGameClient bob 127.0.0.1
+```
+
+## Caveats
+This application is still rough and ready, most of the error handling can be improved and the thread management is a bit shaky. Another aspect that needs alot of improvement is input handling whether that's from the user or the network.
+
 ## Architecture
 	
 ### Client
-
-The clie
 
 ### Server
 
 The server is made up of three main components:
  - UI
  - Controller
- - Server/Networking
+ - Server
+ - Networking
  
 Each is defined as an interface, allowing us to swap out the concrete
 implementations easily for future work and testing.
@@ -35,7 +71,7 @@ followed by parameters if required as follows:
 **COMMAND** **PARAMETER**
 
 Each part is seperated by a space. Each message has a maximum size of
-512 bytes, anything after this limit is ignored.
+512 bytes, anything after this limit is ignored. Each message must end with \r\n.
 
 The commands are as follows:
 

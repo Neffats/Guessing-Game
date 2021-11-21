@@ -47,7 +47,18 @@ void TcpServer::Run() {
 #define BUFFER_SIZE 512
 
 void TcpServer::HandleConnection(ISession* s) {
-  Message msg = s->Read();
+  Message msg;
+  
+  try {
+    msg = s->Read();
+  } catch (std::exception& e) {
+    s->Error();
+    _current_players_mux.lock();
+    _current_players += 1;
+    _current_players_mux.unlock();
+    delete s;
+    return;
+  }
 
   if (msg.type != MessageType::Connect) {
     s->Error();
@@ -67,14 +78,24 @@ void TcpServer::HandleConnection(ISession* s) {
   std::cout << "Connected: " << player << std::endl;
 
   while (true) {
-    msg = s->Read();
+    try {
+      msg = s->Read();
+    } catch (...) {
+      s->Error();
+      delete s;
+
+      _current_players_mux.lock();
+      _current_players += 1;
+      _current_players_mux.unlock();
+      
+      return;
+    }
 
     switch (msg.type) {
     case MessageType::Connect:
       s->Error();
       break;
     case MessageType::Guess:
-      std::cout << "Received GUESS command from: " << player << " " << msg.Parameter << std::endl;
       HandleGuess(s, player, msg.Parameter);
       break;
     case MessageType::Get_Score:
@@ -95,7 +116,9 @@ void TcpServer::HandleConnection(ISession* s) {
 };
 
 void TcpServer::HandleGuess(ISession* s, std::string player, std::string guess) {
-  int guess_int = std::stoi(guess);
+  int guess_int;
+
+  guess_int = std::stoi(guess);
 
   Result r = _app->CheckGuess(guess_int, player);
 

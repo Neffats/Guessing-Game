@@ -69,24 +69,36 @@ void CommandLine::StartThread() {
     if (!empty) {
       Guess* g = FetchGuess();
 
+    
       std::cout << "Received guess " << g->guess << " from player " << g->player << std::endl;
-      std::cout << "Is this (C)orrect/(H)igher/(L)ower: ";
 
-      std::string resp;
-
-      std::cin >> resp; 
-
-      std::string plr = g->player;
       Result res;
-      
-      if (resp == "C") {
-        res = Result::Correct;
-      } else if (resp == "H") {
-        res = Result::Higher;
-      } else if (resp == "L") {
-        res = Result::Lower;
-      } else {
-        // Handle stuff
+      std::string resp;
+      std::string plr;
+
+      while (true) {
+        std::cout << "Is this (C)orrect/(H)igher/(L)ower: ";
+
+
+        std::cin >> resp;
+
+        plr = g->player;
+
+        // Convert user input to uppercase.
+        transform(resp.begin(), resp.end(), resp.begin(), ::toupper);
+
+        if (resp == "C") {
+          res = Result::Correct;
+        } else if (resp == "H") {
+          res = Result::Higher;
+        } else if (resp == "L") {
+          res = Result::Lower;
+        } else {
+          std::cout << "Bad input, please try again." << std::endl;
+          continue;
+        }
+
+        break;
       }
 
       // Allocated new GuessResult here, this will be freed by other thread in CheckGuess().
